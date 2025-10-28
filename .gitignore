@@ -1,2 +1,11 @@
 /build/*
 .DS_Store
+
+# .NET build artifacts
+dotnet/*/bin/
+dotnet/*/obj/
+dotnet/**/*.user
+dotnet/**/*.suo
+dotnet/.vs/
+*.nupkg
+*.snupkg
