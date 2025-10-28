@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>OpenVDB.Points</RootNamespace>
+    <Version>11.0.0</Version>
+    <Authors>OpenVDB Contributors</Authors>
+    <Description>OpenVDB C# port - Point cloud data structures and operations</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OpenVDB.Core\OpenVDB.Core.csproj" />
+  </ItemGroup>
+</Project>
