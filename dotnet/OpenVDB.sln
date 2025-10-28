@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenVDB.Core", "OpenVDB.Core\OpenVDB.Core.csproj", "{8B9A4F1E-8F3A-4C1D-9E2B-1D5E3F4A7B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenVDB.Tools", "OpenVDB.Tools\OpenVDB.Tools.csproj", "{9C8B5F2F-7E4B-4D2E-8F3C-2E6F4G5B8D9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenVDB.Points", "OpenVDB.Points\OpenVDB.Points.csproj", "{AD9C6F3G-8F5C-4E3F-9G4D-3F7G5H6C9E0E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8B9A4F1E-8F3A-4C1D-9E2B-1D5E3F4A7B8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B9A4F1E-8F3A-4C1D-9E2B-1D5E3F4A7B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B9A4F1E-8F3A-4C1D-9E2B-1D5E3F4A7B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B9A4F1E-8F3A-4C1D-9E2B-1D5E3F4A7B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C8B5F2F-7E4B-4D2E-8F3C-2E6F4G5B8D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C8B5F2F-7E4B-4D2E-8F3C-2E6F4G5B8D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C8B5F2F-7E4B-4D2E-8F3C-2E6F4G5B8D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C8B5F2F-7E4B-4D2E-8F3C-2E6F4G5B8D9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD9C6F3G-8F5C-4E3F-9G4D-3F7G5H6C9E0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD9C6F3G-8F5C-4E3F-9G4D-3F7G5H6C9E0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD9C6F3G-8F5C-4E3F-9G4D-3F7G5H6C9E0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD9C6F3G-8F5C-4E3F-9G4D-3F7G5H6C9E0E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
