@@ -324,8 +324,8 @@ namespace OpenVDB.Metadata
             if (_value is string s) return !string.IsNullOrEmpty(s);
             if (_value is int i) return i != 0;
             if (_value is long l) return l != 0;
-            if (_value is float f) return Math.Abs(f) > float.Epsilon;
-            if (_value is double d) return Math.Abs(d) > double.Epsilon;
+            if (_value is float f) return System.Math.Abs(f) > float.Epsilon;
+            if (_value is double d) return System.Math.Abs(d) > double.Epsilon;
             
             // For other types, return true if not default
             return !EqualityComparer<T>.Default.Equals(_value, default(T)!);
