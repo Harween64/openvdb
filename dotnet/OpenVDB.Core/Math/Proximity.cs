@@ -26,7 +26,7 @@ namespace OpenVDB.Math
         public static Vec3<double> ClosestPointOnTriangleToPoint(
             Vec3<double> a, Vec3<double> b, Vec3<double> c, Vec3<double> p, out Vec3<double> uvw)
         {
-            uvw = new Vec3<double>(0.0);
+            uvw = new Vec3<double>(0.0, 0.0, 0.0);
 
             // degenerate triangle, singular
             if (MathUtil.IsApproxEqual(a, b) && MathUtil.IsApproxEqual(a, c))

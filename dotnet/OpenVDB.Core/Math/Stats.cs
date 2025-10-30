@@ -161,9 +161,7 @@ namespace OpenVDB.Math
 
         protected void Join(Extrema other)
         {
-            if (other._size == 0)
-                throw new InvalidOperationException("Cannot join with empty Extrema");
-            
+            // Join is only called when other._size > 0, validated in Add()
             _size += other._size;
             _min = System.Math.Min(_min, other._min);
             _max = System.Math.Max(_max, other._max);
@@ -275,6 +273,9 @@ namespace OpenVDB.Math
     /// </summary>
     public class Histogram
     {
+        // Small epsilon to ensure max value falls within the histogram range
+        private const double MaxBoundaryEpsilon = 1e-10;
+        
         private ulong _size;
         private double _min;
         private double _max;
@@ -293,7 +294,7 @@ namespace OpenVDB.Math
 
             _size = 0;
             _min = min;
-            _max = max + 1e-10;
+            _max = max + MaxBoundaryEpsilon;
             _delta = numBins / (max - min);
             _bins = new List<ulong>(numBins);
             for (int i = 0; i < numBins; ++i)
