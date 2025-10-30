@@ -419,6 +419,17 @@ namespace OpenVDB.Math
         }
 
         /// <summary>
+        /// Return true if Vec3 a is equal to Vec3 b to within the default floating-point comparison tolerance.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsApproxEqual<T>(Vec3<T> a, Vec3<T> b) 
+            where T : struct, IEquatable<T>, IComparable<T>
+        {
+            T tolerance = Tolerance.Value<T>();
+            return a.Eq(b, tolerance);
+        }
+
+        /// <summary>
         /// Return true if a is larger than b to within the given tolerance, i.e., if b - a &lt; tolerance.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
