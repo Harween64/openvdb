@@ -61,6 +61,11 @@ dotnet build OpenVDB.Points/OpenVDB.Points.csproj
   - Interop helpers for C++ compatibility
   - Thread-safety documentation attributes
   - Platform initialization utilities
+- [x] **Threading.cs** - Port from Threading.h (Lot 4 complete)
+  - Task group cancellation using CancellationToken
+  - Thread-local cancellation state management
+  - CancellationScope helper for parallel operations
+  - Adapts TBB concepts to .NET Task Parallel Library
 
 ### 🚧 In Progress / To Do
 
@@ -89,8 +94,8 @@ According to `PLAN_PORTAGE_CSHARP.md`, the porting will proceed in phases:
   - PagedArray
   - Formats
 
-- [ ] **Lot 4: Threading** (1 file)
-  - Threading.h → Threading.cs
+- [x] **Lot 4: Threading** (1 file)
+  - [x] Threading.h → Threading.cs
 
 #### Phase 2: Core System (Lot 5-6)
 - [ ] **Lot 5: Tree Structure** (13 files)
@@ -144,12 +149,32 @@ public const string VersionName = "v11_0_0";
 
 ### TBB → Task Parallel Library
 ```cpp
-// C++
+// C++ - TBB task cancellation
 tbb::parallel_for(range, operation);
+if (condition) {
+    tbb::task::self().cancel_group_execution();
+}
 ```
 ```csharp
-// C#
-Parallel.For(start, end, i => operation(i));
+// C# - TPL with cancellation support
+using (var scope = new Threading.CancellationScope())
+{
+    Parallel.For(0, count, new ParallelOptions 
+    { 
+        CancellationToken = scope.Token 
+    }, i =>
+    {
+        // Work here
+        if (condition)
+            Threading.CancelGroupExecution();
+    });
+}
+
+// Or check for cancellation
+if (Threading.IsGroupExecutionCancelled())
+{
+    // Handle cancellation
+}
 ```
 
 ### Memory Management
