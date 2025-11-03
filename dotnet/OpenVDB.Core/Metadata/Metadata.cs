@@ -69,9 +69,41 @@ namespace OpenVDB.Metadata
         /// </summary>
         public override int GetHashCode() => TypeName.GetHashCode();
 
-        // Serialization will be implemented in Lot 6: IO
-        // protected abstract void ReadValue(BinaryReader reader, uint numBytes);
-        // protected abstract void WriteValue(BinaryWriter writer);
+        /// <summary>
+        /// Read this metadata from a binary reader.
+        /// </summary>
+        /// <param name="reader">The binary reader to read from.</param>
+        public void Read(BinaryReader reader)
+        {
+            // Read the size of the value data
+            uint numBytes = reader.ReadUInt32();
+            ReadValue(reader, numBytes);
+        }
+
+        /// <summary>
+        /// Write this metadata to a binary writer.
+        /// </summary>
+        /// <param name="writer">The binary writer to write to.</param>
+        public void Write(BinaryWriter writer)
+        {
+            // Write the size of the value data
+            // For simplicity, we'll write 0 as a placeholder and implementations can override
+            writer.Write((uint)Size);
+            WriteValue(writer);
+        }
+
+        /// <summary>
+        /// Read the metadata value from a binary reader.
+        /// </summary>
+        /// <param name="reader">The binary reader to read from.</param>
+        /// <param name="numBytes">The number of bytes to read.</param>
+        protected abstract void ReadValue(BinaryReader reader, uint numBytes);
+
+        /// <summary>
+        /// Write the metadata value to a binary writer.
+        /// </summary>
+        /// <param name="writer">The binary writer to write to.</param>
+        protected abstract void WriteValue(BinaryWriter writer);
 
         // ========================================================================
         // FACTORY AND REGISTRY
@@ -231,6 +263,22 @@ namespace OpenVDB.Metadata
             }
             return true;
         }
+
+        /// <summary>
+        /// Read the metadata value from a binary reader.
+        /// </summary>
+        protected override void ReadValue(BinaryReader reader, uint numBytes)
+        {
+            _bytes = reader.ReadBytes((int)numBytes);
+        }
+
+        /// <summary>
+        /// Write the metadata value to a binary writer.
+        /// </summary>
+        protected override void WriteValue(BinaryWriter writer)
+        {
+            writer.Write(_bytes);
+        }
     }
 
     /// <summary>
@@ -338,6 +386,85 @@ namespace OpenVDB.Metadata
         {
             if (other is not TypedMetadata<T> typed) return false;
             return EqualityComparer<T>.Default.Equals(_value, typed._value);
+        }
+
+        /// <summary>
+        /// Read the metadata value from a binary reader.
+        /// </summary>
+        protected override void ReadValue(BinaryReader reader, uint numBytes)
+        {
+            // Simple implementation for common types
+            // TODO: This needs to be extended for complex types
+            if (typeof(T) == typeof(bool))
+            {
+                _value = (T)(object)reader.ReadBoolean();
+            }
+            else if (typeof(T) == typeof(int))
+            {
+                _value = (T)(object)reader.ReadInt32();
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                _value = (T)(object)reader.ReadInt64();
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                _value = (T)(object)reader.ReadSingle();
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                _value = (T)(object)reader.ReadDouble();
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var bytes = reader.ReadBytes((int)numBytes);
+                _value = (T)(object)System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            else
+            {
+                // For other types, try reading raw bytes
+                var bytes = reader.ReadBytes((int)numBytes);
+                // This is a simplified approach - real implementation would need proper serialization
+                throw new NotImplementedException($"Reading metadata of type {typeof(T)} is not yet implemented");
+            }
+        }
+
+        /// <summary>
+        /// Write the metadata value to a binary writer.
+        /// </summary>
+        protected override void WriteValue(BinaryWriter writer)
+        {
+            // Simple implementation for common types
+            if (typeof(T) == typeof(bool))
+            {
+                writer.Write((bool)(object)_value!);
+            }
+            else if (typeof(T) == typeof(int))
+            {
+                writer.Write((int)(object)_value!);
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                writer.Write((long)(object)_value!);
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                writer.Write((float)(object)_value!);
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                writer.Write((double)(object)_value!);
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes((string)(object)_value!);
+                writer.Write(bytes);
+            }
+            else
+            {
+                // For other types, would need proper serialization
+                throw new NotImplementedException($"Writing metadata of type {typeof(T)} is not yet implemented");
+            }
         }
 
         /// <summary>
