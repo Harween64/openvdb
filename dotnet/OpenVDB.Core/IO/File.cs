@@ -442,20 +442,68 @@ namespace OpenVDB.IO
             if (_reader == null)
                 throw new InvalidOperationException("Reader is not initialized");
 
-            // TODO: Implement grid descriptor reading
-            // This requires GridDescriptor to be ported (Lot 6B)
+            // Read the number of grids
+            int gridCount = _reader.ReadInt32();
+
+            // Read each grid descriptor
+            _gridDescriptors.Clear();
+            for (int i = 0; i < gridCount; i++)
+            {
+                var descriptor = new GridDescriptor();
+                var grid = descriptor.Read(_reader);
+                
+                // Store the descriptor by grid name
+                _gridDescriptors[descriptor.GridName] = descriptor;
+            }
         }
 
         private GridBase? ReadGridMetadataOnly(GridDescriptor descriptor)
         {
-            // TODO: Implement metadata-only grid reading
-            return null;
+            if (_reader == null)
+                throw new InvalidOperationException("Reader is not initialized");
+
+            // Seek to the grid position
+            descriptor.SeekToGrid(_fileStream!);
+
+            // Create an empty grid of the appropriate type
+            var grid = descriptor.Read(_reader);
+            if (grid == null)
+                return null;
+
+            // TODO: Grid reading requires implementation of ReadMeta, ReadTransform, etc. in GridBase
+            // These methods are not yet implemented in the Grid class
+            // grid.ReadMeta(_reader);
+            // grid.ReadTransform(_reader);
+            
+            throw new NotImplementedException(
+                "Grid metadata reading requires ReadMeta and ReadTransform methods to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         private GridBase? ReadGrid(GridDescriptor descriptor)
         {
-            // TODO: Implement full grid reading
-            return null;
+            if (_reader == null)
+                throw new InvalidOperationException("Reader is not initialized");
+
+            // Seek to the grid position
+            descriptor.SeekToGrid(_fileStream!);
+
+            // Create an empty grid of the appropriate type
+            var grid = descriptor.Read(_reader);
+            if (grid == null)
+                return null;
+
+            // TODO: Grid reading requires implementation of ReadMeta, ReadTransform, ReadTopology, and ReadBuffers in GridBase
+            // These methods are not yet implemented in the Grid class
+            // grid.ReadMeta(_reader);
+            // grid.ReadTransform(_reader);
+            // descriptor.SeekToBlocks(_fileStream!);
+            // grid.ReadTopology(_reader);
+            // grid.ReadBuffers(_reader);
+
+            throw new NotImplementedException(
+                "Full grid reading requires ReadMeta, ReadTransform, ReadTopology, and ReadBuffers methods to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         private void WriteHeader()
@@ -512,8 +560,13 @@ namespace OpenVDB.IO
             if (_writer == null)
                 throw new InvalidOperationException("Writer is not initialized");
 
-            // TODO: Implement grid writing
-            throw new NotImplementedException("Grid writing not yet implemented");
+            // TODO: Grid writing requires implementation of WriteMeta, WriteTransform, WriteTopology, and WriteBuffers in GridBase
+            // These methods are not yet implemented in the Grid class
+            // Also need SaveFloatAsHalf property
+
+            throw new NotImplementedException(
+                "Grid writing requires WriteMeta, WriteTransform, WriteTopology, WriteBuffers methods and SaveFloatAsHalf property to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         #endregion
