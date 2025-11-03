@@ -457,14 +457,4 @@ namespace OpenVDB.IO
         #endregion
     }
 
-    /// <summary>
-    /// Placeholder for GridDescriptor class (to be ported in Lot 6B).
-    /// </summary>
-    internal class GridDescriptor
-    {
-        public string Name { get; set; } = string.Empty;
-        public string GridType { get; set; } = string.Empty;
-        public long DataOffset { get; set; }
-        public long BlockCount { get; set; }
-    }
 }
