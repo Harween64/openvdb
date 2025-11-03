@@ -308,10 +308,8 @@ namespace OpenVDB.IO
             // 5) Generate and write a new 36-byte UUID as ASCII string
             var guid = Guid.NewGuid();
             string uuid = guid.ToString("D").ToUpperInvariant();
-            foreach (char c in uuid)
-            {
-                _writer.Write((byte)c);
-            }
+            var uuidBytes = System.Text.Encoding.ASCII.GetBytes(uuid);
+            _writer.Write(uuidBytes);
         }
 
         private void WriteFileMetadata(MetaMap metadata)

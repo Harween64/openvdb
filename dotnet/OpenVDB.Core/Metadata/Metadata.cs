@@ -87,7 +87,6 @@ namespace OpenVDB.Metadata
         public void Write(BinaryWriter writer)
         {
             // Write the size of the value data
-            // For simplicity, we'll write 0 as a placeholder and implementations can override
             writer.Write((uint)Size);
             WriteValue(writer);
         }
@@ -422,9 +421,7 @@ namespace OpenVDB.Metadata
             }
             else
             {
-                // For other types, try reading raw bytes
-                var bytes = reader.ReadBytes((int)numBytes);
-                // This is a simplified approach - real implementation would need proper serialization
+                // For other types, would need proper serialization
                 throw new NotImplementedException($"Reading metadata of type {typeof(T)} is not yet implemented");
             }
         }
