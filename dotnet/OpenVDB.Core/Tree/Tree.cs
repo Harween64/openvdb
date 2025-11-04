@@ -55,6 +55,21 @@ namespace OpenVDB.Tree
         /// Return the memory footprint of this tree in bytes
         /// </summary>
         public abstract long MemUsage();
+
+        /// <summary>
+        /// Return the depth of this tree (number of node levels)
+        /// </summary>
+        public abstract int Depth { get; }
+
+        /// <summary>
+        /// Return the number of leaf nodes
+        /// </summary>
+        public abstract long LeafCount();
+
+        /// <summary>
+        /// Return the number of non-leaf nodes
+        /// </summary>
+        public abstract long NonLeafCount();
     }
     
     /// <summary>
@@ -157,6 +172,29 @@ namespace OpenVDB.Tree
         {
             // TODO: Implement
             return IntPtr.Size * 2;
+        }
+
+        /// <summary>
+        /// Return the depth of this tree (number of node levels)
+        /// </summary>
+        public override int Depth => 4; // Typical OpenVDB tree has 4 levels
+
+        /// <summary>
+        /// Return the number of leaf nodes
+        /// </summary>
+        public override long LeafCount()
+        {
+            // TODO: Implement
+            return 0;
+        }
+
+        /// <summary>
+        /// Return the number of non-leaf nodes
+        /// </summary>
+        public override long NonLeafCount()
+        {
+            // TODO: Implement
+            return 0;
         }
     }
 }
