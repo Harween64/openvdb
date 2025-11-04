@@ -202,6 +202,61 @@ namespace OpenVDB.Math
         }
 
         /// <summary>
+        /// Return a new coordinate offset by the same amount in all dimensions
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coord OffsetBy(int n)
+        {
+            return new Coord(_x + n, _y + n, _z + n);
+        }
+
+        /// <summary>
+        /// Offset this coordinate by the same amount in all dimensions
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Offset(int n)
+        {
+            _x += n;
+            _y += n;
+            _z += n;
+        }
+
+        /// <summary>
+        /// Set this coordinate to the component-wise minimum with another
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coord MinComponent(Coord other)
+        {
+            return new Coord(
+                System.Math.Min(_x, other._x),
+                System.Math.Min(_y, other._y),
+                System.Math.Min(_z, other._z)
+            );
+        }
+
+        /// <summary>
+        /// Set this coordinate to the component-wise maximum with another
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coord MaxComponent(Coord other)
+        {
+            return new Coord(
+                System.Math.Max(_x, other._x),
+                System.Math.Max(_y, other._y),
+                System.Math.Max(_z, other._z)
+            );
+        }
+
+        /// <summary>
+        /// Return true if any component of a is less than the corresponding component of b
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool LessThan(Coord a, Coord b)
+        {
+            return a._x < b._x || a._y < b._y || a._z < b._z;
+        }
+
+        /// <summary>
         /// Indexer for accessing coordinates
         /// </summary>
         public int this[int i]
@@ -289,5 +344,283 @@ namespace OpenVDB.Math
         /// Static zero coordinate
         /// </summary>
         public static Coord Zero => new Coord(0, 0, 0);
+    }
+
+    /// <summary>
+    /// Axis-aligned bounding box of integer coordinates
+    /// </summary>
+    public struct CoordBBox : IEquatable<CoordBBox>
+    {
+        private Coord _min;
+        private Coord _max;
+
+        /// <summary>
+        /// The default constructor produces an empty bounding box.
+        /// </summary>
+        public CoordBBox()
+        {
+            _min = Coord.Max;
+            _max = Coord.Min;
+        }
+
+        /// <summary>
+        /// Construct a bounding box with the given min and max bounds.
+        /// </summary>
+        public CoordBBox(Coord min, Coord max)
+        {
+            _min = min;
+            _max = max;
+        }
+
+        /// <summary>
+        /// Construct from individual components of the min and max bounds.
+        /// </summary>
+        public CoordBBox(int xMin, int yMin, int zMin, int xMax, int yMax, int zMax)
+        {
+            _min = new Coord(xMin, yMin, zMin);
+            _max = new Coord(xMax, yMax, zMax);
+        }
+
+        /// <summary>
+        /// Create a cubical bounding box with the given minimum and dimension.
+        /// </summary>
+        public static CoordBBox CreateCube(Coord min, int dim)
+        {
+            return new CoordBBox(min, min.OffsetBy(dim - 1));
+        }
+
+        /// <summary>
+        /// Return an "infinite" bounding box, as defined by the Coord value range.
+        /// </summary>
+        public static CoordBBox Infinity => new CoordBBox(Coord.Min, Coord.Max);
+
+        /// <summary>
+        /// Get or set the minimum coordinate.
+        /// </summary>
+        public Coord Min
+        {
+            get => _min;
+            set => _min = value;
+        }
+
+        /// <summary>
+        /// Get or set the maximum coordinate.
+        /// </summary>
+        public Coord Max
+        {
+            get => _max;
+            set => _max = value;
+        }
+
+        /// <summary>
+        /// Reset to an empty bounding box.
+        /// </summary>
+        public void Reset()
+        {
+            _min = Coord.Max;
+            _max = Coord.Min;
+        }
+
+        /// <summary>
+        /// Reset with the given min and max bounds.
+        /// </summary>
+        public void Reset(Coord min, Coord max)
+        {
+            _min = min;
+            _max = max;
+        }
+
+        /// <summary>
+        /// Reset to a cubical bounding box with the given minimum and dimension.
+        /// </summary>
+        public void ResetToCube(Coord min, int dim)
+        {
+            _min = min;
+            _max = min.OffsetBy(dim - 1);
+        }
+
+        /// <summary>
+        /// Return the minimum coordinate (inclusive).
+        /// </summary>
+        public Coord GetStart() => _min;
+
+        /// <summary>
+        /// Return the maximum coordinate plus one (exclusive).
+        /// </summary>
+        public Coord GetEnd() => _max.OffsetBy(1);
+
+        /// <summary>
+        /// Return true if this bounding box is empty (i.e., encloses no coordinates).
+        /// </summary>
+        public bool IsEmpty => _min.X > _max.X || _min.Y > _max.Y || _min.Z > _max.Z;
+
+        /// <summary>
+        /// Return true if this bounding box is nonempty (i.e., encloses at least one coordinate).
+        /// </summary>
+        public bool HasVolume => !IsEmpty;
+
+        /// <summary>
+        /// Return the floating-point position of the center of this bounding box.
+        /// </summary>
+        public Vec3<double> GetCenter()
+        {
+            return new Vec3<double>(
+                (_min.X + _max.X) * 0.5,
+                (_min.Y + _max.Y) * 0.5,
+                (_min.Z + _max.Z) * 0.5
+            );
+        }
+
+        /// <summary>
+        /// Return the dimensions of the coordinates spanned by this bounding box.
+        /// Since coordinates are inclusive, a bounding box with min = max has dimensions of (1, 1, 1).
+        /// </summary>
+        public Coord Dim()
+        {
+            return IsEmpty ? new Coord(0) : (_max.OffsetBy(1) - _min);
+        }
+
+        /// <summary>
+        /// Return the integer volume of coordinates spanned by this bounding box.
+        /// Since coordinates are inclusive, a bounding box with min = max has volume one.
+        /// </summary>
+        public ulong Volume
+        {
+            get
+            {
+                var d = Dim();
+                return (ulong)d.X * (ulong)d.Y * (ulong)d.Z;
+            }
+        }
+
+        /// <summary>
+        /// Return true if this bounding box can be subdivided.
+        /// </summary>
+        public bool IsDivisible => _min.X < _max.X && _min.Y < _max.Y && _min.Z < _max.Z;
+
+        /// <summary>
+        /// Return the index (0, 1 or 2) of the shortest axis.
+        /// </summary>
+        public int MinExtent()
+        {
+            var d = Dim();
+            if (d.X <= d.Y && d.X <= d.Z) return 0;
+            if (d.Y <= d.Z) return 1;
+            return 2;
+        }
+
+        /// <summary>
+        /// Return the index (0, 1 or 2) of the longest axis.
+        /// </summary>
+        public int MaxExtent()
+        {
+            var d = Dim();
+            if (d.X >= d.Y && d.X >= d.Z) return 0;
+            if (d.Y >= d.Z) return 1;
+            return 2;
+        }
+
+        /// <summary>
+        /// Return true if the given coordinate is inside this bounding box.
+        /// </summary>
+        public bool IsInside(Coord xyz)
+        {
+            return !(Coord.LessThan(xyz, _min) || Coord.LessThan(_max, xyz));
+        }
+
+        /// <summary>
+        /// Return true if the given bounding box is inside this bounding box.
+        /// </summary>
+        public bool IsInside(CoordBBox b)
+        {
+            return !(Coord.LessThan(b._min, _min) || Coord.LessThan(_max, b._max));
+        }
+
+        /// <summary>
+        /// Return true if the given bounding box overlaps with this bounding box.
+        /// </summary>
+        public bool HasOverlap(CoordBBox b)
+        {
+            return !(Coord.LessThan(_max, b._min) || Coord.LessThan(b._max, _min));
+        }
+
+        /// <summary>
+        /// Pad this bounding box with the specified padding.
+        /// </summary>
+        public void Expand(int padding)
+        {
+            _min = _min.OffsetBy(-padding);
+            _max = _max.OffsetBy(padding);
+        }
+
+        /// <summary>
+        /// Return a new instance that is expanded by the specified padding.
+        /// </summary>
+        public CoordBBox ExpandBy(int padding)
+        {
+            return new CoordBBox(_min.OffsetBy(-padding), _max.OffsetBy(padding));
+        }
+
+        /// <summary>
+        /// Expand this bounding box to enclose the given coordinate.
+        /// </summary>
+        public void Expand(Coord xyz)
+        {
+            _min = _min.MinComponent(xyz);
+            _max = _max.MaxComponent(xyz);
+        }
+
+        /// <summary>
+        /// Union this bounding box with the given bounding box.
+        /// </summary>
+        public void Expand(CoordBBox bbox)
+        {
+            _min = _min.MinComponent(bbox._min);
+            _max = _max.MaxComponent(bbox._max);
+        }
+
+        /// <summary>
+        /// Intersect this bounding box with the given bounding box.
+        /// </summary>
+        public void Intersect(CoordBBox bbox)
+        {
+            _min = _min.MaxComponent(bbox._min);
+            _max = _max.MinComponent(bbox._max);
+        }
+
+        /// <summary>
+        /// Translate this bounding box by the given offset.
+        /// </summary>
+        public void Translate(Coord t)
+        {
+            _min += t;
+            _max += t;
+        }
+
+        /// <summary>
+        /// Move this bounding box to the specified minimum.
+        /// </summary>
+        public void MoveMin(Coord min)
+        {
+            _max += min - _min;
+            _min = min;
+        }
+
+        /// <summary>
+        /// Move this bounding box to the specified maximum.
+        /// </summary>
+        public void MoveMax(Coord max)
+        {
+            _min += max - _max;
+            _max = max;
+        }
+
+        public bool Equals(CoordBBox other) => _min.Equals(other._min) && _max.Equals(other._max);
+        public override bool Equals(object? obj) => obj is CoordBBox other && Equals(other);
+        public override int GetHashCode() => HashCode.Combine(_min, _max);
+        public override string ToString() => $"CoordBBox[{_min} - {_max}]";
+
+        public static bool operator ==(CoordBBox left, CoordBBox right) => left.Equals(right);
+        public static bool operator !=(CoordBBox left, CoordBBox right) => !left.Equals(right);
     }
 }
