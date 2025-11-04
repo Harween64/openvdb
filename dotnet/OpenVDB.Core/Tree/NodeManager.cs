@@ -352,4 +352,83 @@ namespace OpenVDB.Tree
             }
         }
     }
+
+    /// <summary>
+    /// DynamicNodeManager provides dynamic iteration over tree nodes
+    /// </summary>
+    /// <typeparam name="TTree">The tree type</typeparam>
+    /// <remarks>
+    /// Unlike NodeManager which creates cached node arrays, DynamicNodeManager
+    /// traverses the tree dynamically. This is useful when the tree structure
+    /// might change during iteration or when memory overhead of caching is undesirable.
+    /// </remarks>
+    public class DynamicNodeManager<TTree> where TTree : TreeBase
+    {
+        private readonly TTree _tree;
+        private readonly int _maxDepth;
+
+        /// <summary>
+        /// The tree being managed
+        /// </summary>
+        public TTree Tree => _tree;
+
+        /// <summary>
+        /// Constructor from a tree
+        /// </summary>
+        /// <param name="tree">The tree to manage</param>
+        /// <param name="maxDepth">Maximum depth to traverse (default is full tree depth)</param>
+        public DynamicNodeManager(TTree tree, int maxDepth = -1)
+        {
+            _tree = tree ?? throw new ArgumentNullException(nameof(tree));
+            _maxDepth = maxDepth < 0 ? tree.Depth : maxDepth;
+        }
+
+        /// <summary>
+        /// Apply an operation to all nodes in a top-down traversal
+        /// </summary>
+        /// <typeparam name="TOperator">The operator type</typeparam>
+        /// <param name="op">The operator to apply</param>
+        /// <param name="threaded">Whether to use multi-threading</param>
+        public void ForeachTopDown<TOperator>(TOperator op, bool threaded = true)
+        {
+            // TODO: Implement top-down traversal with operator
+            // This requires full tree structure implementation
+        }
+
+        /// <summary>
+        /// Apply an operation to all nodes in a bottom-up traversal
+        /// </summary>
+        /// <typeparam name="TOperator">The operator type</typeparam>
+        /// <param name="op">The operator to apply</param>
+        /// <param name="threaded">Whether to use multi-threading</param>
+        public void ForeachBottomUp<TOperator>(TOperator op, bool threaded = true)
+        {
+            // TODO: Implement bottom-up traversal with operator
+            // This requires full tree structure implementation
+        }
+
+        /// <summary>
+        /// Reduce operation in a top-down traversal
+        /// </summary>
+        /// <typeparam name="TOperator">The operator type</typeparam>
+        /// <param name="op">The operator to apply and reduce</param>
+        /// <param name="threaded">Whether to use multi-threading</param>
+        public void ReduceTopDown<TOperator>(TOperator op, bool threaded = true)
+        {
+            // TODO: Implement top-down reduction
+            // This requires full tree structure implementation and parallel reduction support
+        }
+
+        /// <summary>
+        /// Reduce operation in a bottom-up traversal
+        /// </summary>
+        /// <typeparam name="TOperator">The operator type</typeparam>
+        /// <param name="op">The operator to apply and reduce</param>
+        /// <param name="threaded">Whether to use multi-threading</param>
+        public void ReduceBottomUp<TOperator>(TOperator op, bool threaded = true)
+        {
+            // TODO: Implement bottom-up reduction
+            // This requires full tree structure implementation and parallel reduction support
+        }
+    }
 }

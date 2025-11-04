@@ -166,41 +166,159 @@ namespace OpenVDB.Grid
                 return _gridRegistry.ContainsKey(gridType);
             }
         }
+
+        // ========================================================================
+        // TOPOLOGY OPERATIONS (Stub implementations for Lot 7A)
+        // ========================================================================
+
+        /// <summary>
+        /// Union this grid's active voxel topology with another grid's.
+        /// </summary>
+        /// <param name="other">The other grid</param>
+        /// <remarks>
+        /// TODO: Full implementation requires tree-level topology merge
+        /// </remarks>
+        public virtual void TopologyUnion(GridBase other)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+            // TODO: Implement topology union at tree level
+        }
+
+        /// <summary>
+        /// Intersect this grid's active voxel topology with another grid's.
+        /// </summary>
+        /// <param name="other">The other grid</param>
+        /// <remarks>
+        /// TODO: Full implementation requires tree-level topology merge
+        /// </remarks>
+        public virtual void TopologyIntersection(GridBase other)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+            // TODO: Implement topology intersection at tree level
+        }
+
+        /// <summary>
+        /// Subtract another grid's active voxel topology from this grid's.
+        /// </summary>
+        /// <param name="other">The other grid</param>
+        /// <remarks>
+        /// TODO: Full implementation requires tree-level topology merge
+        /// </remarks>
+        public virtual void TopologyDifference(GridBase other)
+        {
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+            // TODO: Implement topology difference at tree level
+        }
+
+        /// <summary>
+        /// Return a deep copy of this grid.
+        /// </summary>
+        /// <returns>A new grid that is a copy of this grid</returns>
+        public abstract GridBase DeepCopy();
+
+        /// <summary>
+        /// Return the grid class for this grid.
+        /// </summary>
+        public virtual GridClass GridClass { get; set; } = GridClass.Unknown;
+
+        /// <summary>
+        /// Get the transform for this grid.
+        /// </summary>
+        public virtual object? Transform { get; set; }
     }
 
     /// <summary>
-    /// Generic grid class (stub for Lot 1).
+    /// Grid classification enum
     /// </summary>
-    /// <typeparam name="TTree">The tree type for this grid.</typeparam>
-    /// <remarks>
-    /// This is a minimal stub. Full implementation will be provided in Lot 5 (Tree System).
-    /// </remarks>
-    public class Grid<TTree> : GridBase
+    public enum GridClass
     {
+        /// <summary>Unknown grid type</summary>
+        Unknown,
+        /// <summary>Level set (narrow-band signed distance field)</summary>
+        LevelSet,
+        /// <summary>Fog volume (density field)</summary>
+        FogVolume,
+        /// <summary>Staggered vector field</summary>
+        Staggered
+    }
+
+    /// <summary>
+    /// Generic grid class with a tree and transform.
+    /// </summary>
+    /// <typeparam name="TValue">The value type for this grid.</typeparam>
+    /// <remarks>
+    /// Enhanced implementation for Lot 7A with basic topology support.
+    /// Full tree integration will be completed with NodeManager/DynamicNodeManager.
+    /// </remarks>
+    public class Grid<TValue> : GridBase where TValue : struct
+    {
+        private TValue _background;
+        private object? _tree;
+
         /// <summary>
-        /// Initializes a new instance of the Grid class.
+        /// Initializes a new instance of the Grid class with default background.
         /// </summary>
-        public Grid()
+        public Grid() : this(default(TValue))
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the Grid class with specified background.
+        /// </summary>
+        /// <param name="background">The background value</param>
+        public Grid(TValue background)
+        {
+            _background = background;
+            _tree = null;
+        }
+
+        /// <summary>
+        /// Gets or sets the background value for this grid.
+        /// </summary>
+        public TValue Background
+        {
+            get => _background;
+            set => _background = value;
         }
 
         /// <summary>
         /// Gets the grid type name.
         /// </summary>
-        public override string GridType => $"Grid<{typeof(TTree).Name}>";
+        public override string GridType => $"Grid<{typeof(TValue).Name}>";
 
         /// <summary>
         /// Gets the tree type name.
         /// </summary>
-        public override string TreeType => typeof(TTree).Name;
+        public override string TreeType => $"Tree<{typeof(TValue).Name}>";
 
         /// <summary>
-        /// Gets the value type name (stub - will be determined from tree in Lot 5).
+        /// Gets the value type name.
         /// </summary>
-        public override string ValueType => "unknown";
+        public override string ValueType => typeof(TValue).Name;
 
-        // Tree-related functionality will be implemented in Lot 5
-        // public TTree Tree { get; }
-        // public Transform Transform { get; }
+        /// <summary>
+        /// Return a deep copy of this grid.
+        /// </summary>
+        /// <returns>A new grid that is a copy of this grid</returns>
+        public override GridBase DeepCopy()
+        {
+            var copy = new Grid<TValue>(_background)
+            {
+                Name = this.Name,
+                GridClass = this.GridClass,
+                Transform = this.Transform
+            };
+            
+            // TODO: Copy tree structure when tree implementation is complete
+            // TODO: Copy metadata
+            
+            return copy;
+        }
+
+        // Tree-related functionality will be implemented with NodeManager/DynamicNodeManager
+        // public TreeBase Tree { get; set; }
     }
 }
