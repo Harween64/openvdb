@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenVDB.Core\OpenVDB.Core.csproj" />
+    <ProjectReference Include="..\OpenVDB.Tools\OpenVDB.Tools.csproj" />
   </ItemGroup>
 
 </Project>
