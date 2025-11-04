@@ -287,8 +287,77 @@ namespace OpenVDB.Metadata
         /// </summary>
         public static bool operator !=(MetaMap? left, MetaMap? right) => !(left == right);
 
-        // Serialization will be implemented in Lot 6: IO
-        // public void ReadMeta(BinaryReader reader);
-        // public void WriteMeta(BinaryWriter writer);
+        /// <summary>
+        /// Read metadata from a binary reader.
+        /// </summary>
+        /// <param name="reader">The binary reader to read from.</param>
+        public void ReadMeta(System.IO.BinaryReader reader)
+        {
+            // Read the metadata count
+            int count = reader.ReadInt32();
+
+            // Read each metadata entry
+            for (int i = 0; i < count; i++)
+            {
+                // Read the field name
+                string name = ReadString(reader);
+
+                // Read the metadata type name
+                string typeName = ReadString(reader);
+
+                // Create and read the metadata based on its type
+                var metadata = global::OpenVDB.Metadata.Metadata.CreateMetadata(typeName);
+                if (metadata == null)
+                {
+                    throw new System.IO.IOException($"Unknown metadata type: {typeName}");
+                }
+
+                metadata.Read(reader);
+                _metadata[name] = metadata;
+            }
+        }
+
+        /// <summary>
+        /// Write metadata to a binary writer.
+        /// </summary>
+        /// <param name="writer">The binary writer to write to.</param>
+        public void WriteMeta(System.IO.BinaryWriter writer)
+        {
+            // Write the metadata count
+            writer.Write(_metadata.Count);
+
+            // Write each metadata entry
+            foreach (var kvp in _metadata)
+            {
+                // Write the field name
+                WriteString(writer, kvp.Key);
+
+                // Write the metadata type name
+                WriteString(writer, kvp.Value.TypeName);
+
+                // Write the metadata value
+                kvp.Value.Write(writer);
+            }
+        }
+
+        private static string ReadString(System.IO.BinaryReader reader)
+        {
+            int length = reader.ReadInt32();
+            if (length < 0)
+                throw new System.IO.IOException("Invalid string length");
+
+            if (length == 0)
+                return string.Empty;
+
+            var bytes = reader.ReadBytes(length);
+            return System.Text.Encoding.UTF8.GetString(bytes);
+        }
+
+        private static void WriteString(System.IO.BinaryWriter writer, string value)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
+        }
     }
 }

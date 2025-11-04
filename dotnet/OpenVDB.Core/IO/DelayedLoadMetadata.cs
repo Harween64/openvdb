@@ -243,7 +243,7 @@ namespace OpenVDB.IO
         /// </summary>
         /// <param name="reader">The binary reader to read from.</param>
         /// <param name="numBytes">The number of bytes to read.</param>
-        internal void ReadValue(BinaryReader reader, uint numBytes)
+        protected override void ReadValue(BinaryReader reader, uint numBytes)
         {
             // Read mask count
             int maskCount = reader.ReadInt32();
@@ -266,7 +266,7 @@ namespace OpenVDB.IO
         /// Writes the metadata value to a binary writer.
         /// </summary>
         /// <param name="writer">The binary writer to write to.</param>
-        internal void WriteValue(BinaryWriter writer)
+        protected override void WriteValue(BinaryWriter writer)
         {
             // Write mask count and data
             writer.Write(_mask.Count);

@@ -38,6 +38,18 @@ namespace OpenVDB.Tests.Metadata
             {
                 return other is TestMetadata tm && tm._value == _value;
             }
+
+            protected override void ReadValue(System.IO.BinaryReader reader, uint numBytes)
+            {
+                var bytes = reader.ReadBytes((int)numBytes);
+                _value = System.Text.Encoding.UTF8.GetString(bytes);
+            }
+
+            protected override void WriteValue(System.IO.BinaryWriter writer)
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(_value);
+                writer.Write(bytes);
+            }
         }
 
         [Fact]
@@ -156,6 +168,18 @@ namespace OpenVDB.Tests.Metadata
             public override string AsString() => Value;
             public override bool AsBool() => !string.IsNullOrEmpty(Value);
             public override bool Equals(global::OpenVDB.Metadata.Metadata? other) => true;
+            
+            protected override void ReadValue(System.IO.BinaryReader reader, uint numBytes)
+            {
+                var bytes = reader.ReadBytes((int)numBytes);
+                Value = System.Text.Encoding.UTF8.GetString(bytes);
+            }
+
+            protected override void WriteValue(System.IO.BinaryWriter writer)
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(Value);
+                writer.Write(bytes);
+            }
         }
     }
 }

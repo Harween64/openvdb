@@ -393,9 +393,37 @@ namespace OpenVDB.IO
             if (_reader == null)
                 throw new InvalidOperationException("Reader is not initialized");
 
-            // TODO: Implement VDB file header reading
-            // Magic number, version, etc.
-            throw new NotImplementedException("VDB file header reading not yet implemented");
+            // 1) Read the magic number for VDB (8 bytes)
+            long magic = _reader.ReadInt64();
+            const long OPENVDB_MAGIC = 0x56444220;
+            if (magic != OPENVDB_MAGIC)
+            {
+                throw new IOException("Not a valid VDB file - invalid magic number");
+            }
+
+            // 2) Read the file format version number (4 bytes)
+            uint fileVersion = _reader.ReadUInt32();
+            SetFileVersion(fileVersion);
+            
+            const uint OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION = 222;
+            if (fileVersion < OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION)
+            {
+                throw new IOException($"VDB file version {fileVersion} is not supported. Minimum version is {OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION}");
+            }
+
+            // 3) Read the library version numbers (major and minor, 4 bytes each)
+            uint libraryMajor = _reader.ReadUInt32();
+            uint libraryMinor = _reader.ReadUInt32();
+            SetLibraryVersion(new VersionId(libraryMajor, libraryMinor));
+
+            // 4) Read the flag indicating whether the stream supports random access (1 byte)
+            byte hasGridOffsets = _reader.ReadByte();
+            InputHasGridOffsets = hasGridOffsets != 0;
+
+            // 5) Read the 36-byte UUID as ASCII string
+            var uuidChars = _reader.ReadChars(36);
+            string uuid = new string(uuidChars);
+            SetUniqueTag(uuid);
         }
 
         private MetaMap ReadFileMetadata()
@@ -403,8 +431,10 @@ namespace OpenVDB.IO
             if (_reader == null)
                 throw new InvalidOperationException("Reader is not initialized");
 
-            // TODO: Implement metadata reading
-            return new MetaMap();
+            // Read metadata using the MetaMap's read functionality
+            var metadata = new MetaMap();
+            metadata.ReadMeta(_reader);
+            return metadata;
         }
 
         private void ReadGridDescriptors()
@@ -412,20 +442,68 @@ namespace OpenVDB.IO
             if (_reader == null)
                 throw new InvalidOperationException("Reader is not initialized");
 
-            // TODO: Implement grid descriptor reading
-            // This requires GridDescriptor to be ported (Lot 6B)
+            // Read the number of grids
+            int gridCount = _reader.ReadInt32();
+
+            // Read each grid descriptor
+            _gridDescriptors.Clear();
+            for (int i = 0; i < gridCount; i++)
+            {
+                var descriptor = new GridDescriptor();
+                var grid = descriptor.Read(_reader);
+                
+                // Store the descriptor by grid name
+                _gridDescriptors[descriptor.GridName] = descriptor;
+            }
         }
 
         private GridBase? ReadGridMetadataOnly(GridDescriptor descriptor)
         {
-            // TODO: Implement metadata-only grid reading
-            return null;
+            if (_reader == null)
+                throw new InvalidOperationException("Reader is not initialized");
+
+            // Seek to the grid position
+            descriptor.SeekToGrid(_fileStream!);
+
+            // Create an empty grid of the appropriate type
+            var grid = descriptor.Read(_reader);
+            if (grid == null)
+                return null;
+
+            // TODO: Grid reading requires implementation of ReadMeta, ReadTransform, etc. in GridBase
+            // These methods are not yet implemented in the Grid class
+            // grid.ReadMeta(_reader);
+            // grid.ReadTransform(_reader);
+            
+            throw new NotImplementedException(
+                "Grid metadata reading requires ReadMeta and ReadTransform methods to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         private GridBase? ReadGrid(GridDescriptor descriptor)
         {
-            // TODO: Implement full grid reading
-            return null;
+            if (_reader == null)
+                throw new InvalidOperationException("Reader is not initialized");
+
+            // Seek to the grid position
+            descriptor.SeekToGrid(_fileStream!);
+
+            // Create an empty grid of the appropriate type
+            var grid = descriptor.Read(_reader);
+            if (grid == null)
+                return null;
+
+            // TODO: Grid reading requires implementation of ReadMeta, ReadTransform, ReadTopology, and ReadBuffers in GridBase
+            // These methods are not yet implemented in the Grid class
+            // grid.ReadMeta(_reader);
+            // grid.ReadTransform(_reader);
+            // descriptor.SeekToBlocks(_fileStream!);
+            // grid.ReadTopology(_reader);
+            // grid.ReadBuffers(_reader);
+
+            throw new NotImplementedException(
+                "Full grid reading requires ReadMeta, ReadTransform, ReadTopology, and ReadBuffers methods to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         private void WriteHeader()
@@ -433,8 +511,37 @@ namespace OpenVDB.IO
             if (_writer == null)
                 throw new InvalidOperationException("Writer is not initialized");
 
-            // TODO: Implement VDB file header writing
-            throw new NotImplementedException("VDB file header writing not yet implemented");
+            // 1) Write the magic number for VDB (8 bytes)
+            const long OPENVDB_MAGIC = 0x56444220;
+            _writer.Write(OPENVDB_MAGIC);
+
+            // 2) Write the file format version number (4 bytes)
+            const uint OPENVDB_FILE_VERSION = 224; // Current file version
+            _writer.Write(OPENVDB_FILE_VERSION);
+
+            // 3) Write the library version numbers (4 bytes each)
+            const uint OPENVDB_LIBRARY_MAJOR_VERSION = 11;
+            const uint OPENVDB_LIBRARY_MINOR_VERSION = 0;
+            _writer.Write(OPENVDB_LIBRARY_MAJOR_VERSION);
+            _writer.Write(OPENVDB_LIBRARY_MINOR_VERSION);
+
+            // 4) Write a flag indicating that this stream contains grid offsets (1 byte)
+            // Files always have grid offsets for random access
+            byte hasGridOffsets = 1;
+            _writer.Write(hasGridOffsets);
+
+            // 5) Generate and write a new 36-byte UUID as ASCII string
+            string uuid = GenerateUUID();
+            SetUniqueTag(uuid);
+            var uuidBytes = System.Text.Encoding.ASCII.GetBytes(uuid);
+            _writer.Write(uuidBytes);
+        }
+
+        private static string GenerateUUID()
+        {
+            // Generate a random UUID in the format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+            var guid = Guid.NewGuid();
+            return guid.ToString("D").ToUpperInvariant();
         }
 
         private void WriteFileMetadata(MetaMap metadata)
@@ -442,7 +549,8 @@ namespace OpenVDB.IO
             if (_writer == null)
                 throw new InvalidOperationException("Writer is not initialized");
 
-            // TODO: Implement metadata writing
+            // Write metadata using the MetaMap's write functionality
+            metadata.WriteMeta(_writer);
         }
 
         private void WriteGrid(GridBase grid)
@@ -450,8 +558,13 @@ namespace OpenVDB.IO
             if (_writer == null)
                 throw new InvalidOperationException("Writer is not initialized");
 
-            // TODO: Implement grid writing
-            throw new NotImplementedException("Grid writing not yet implemented");
+            // TODO: Grid writing requires implementation of WriteMeta, WriteTransform, WriteTopology, and WriteBuffers in GridBase
+            // These methods are not yet implemented in the Grid class
+            // Also need SaveFloatAsHalf property
+
+            throw new NotImplementedException(
+                "Grid writing requires WriteMeta, WriteTransform, WriteTopology, WriteBuffers methods and SaveFloatAsHalf property to be implemented in GridBase class. " +
+                "This is part of the full Grid I/O implementation which is beyond the scope of completing these stubs.");
         }
 
         #endregion
